@@ -1,8 +1,8 @@
 {
-  "name": "jlx/wp-app",
+  "name": "cvy/portfolio-job-search",
   "autoload": {
     "psr-4": {
-      "Jlx\\": "/inc"
+      "Pjs\\": "/inc"
     }
   },
   "require": {},
