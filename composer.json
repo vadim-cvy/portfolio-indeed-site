@@ -1,0 +1,85 @@
+{
+  "name": "jlx/wp-app",
+  "autoload": {
+    "psr-4": {
+      "Jlx\\": "/inc"
+    }
+  },
+  "require": {},
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-design-patterns.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-assets.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-object.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-user.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-term.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-post.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-objects-query.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-users-query.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-terms-query.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-posts-query.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-objects-type-wrapper.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-custom-taxonomy.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-custom-post-type.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-formidable.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/vadim-cvy/util-wp-beaver-builder-astra-compatibility.git"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
