@@ -2,10 +2,12 @@
   "name": "cvy/portfolio-job-search",
   "autoload": {
     "psr-4": {
-      "Pjs\\": "/inc"
+      "Pjs\\": "inc/"
     }
   },
-  "require": {},
+  "require": {
+    "cvy/util-design-patterns": "^1.0"
+  },
   "repositories": [
     {
       "type": "vcs",
