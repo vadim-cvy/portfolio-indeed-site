@@ -7,10 +7,10 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
 {
   protected function __construct()
   {
-    add_shortcode( 'pjs_jobs_filter', [ $this, '_get_content' ] );
+    add_shortcode( 'pjs_jobs_filter', fn() => $this->get_content() );
   }
 
-  public function _get_content() : string
+  private function get_content() : string
   {
     ob_start();
 
@@ -23,7 +23,7 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
     return $output;
   }
 
-  protected function render_content() : void
+  private function render_content() : void
   {
     require_once PJS_TEMPLATES_PATH . 'jobs-filter/jobs-filter.php';
   }
