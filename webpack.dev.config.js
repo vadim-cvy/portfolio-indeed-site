@@ -6,9 +6,6 @@ config.watch = true
 
 config.mode = 'development'
 
-config.output = {
-  filename: '[name]/index.dev.js',
-  path: path.resolve(__dirname, 'assets/js/dist'),
-}
+config.output.filename = '[name]/index.dev.js'
 
 module.exports = config
