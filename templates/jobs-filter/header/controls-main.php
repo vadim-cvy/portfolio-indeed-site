@@ -1,7 +1,7 @@
 <div class="pjs-filter__controls_main">
   <label class="pjs-filter__control pjs-filter__control_type_text">
     <span class="pjs-filter__control__label">
-      Where
+      What
     </span>
 
     <input
@@ -19,7 +19,7 @@
 
   <label class="pjs-filter__control pjs-filter__control_type_text">
     <span class="pjs-filter__control__label">
-      What
+      Where
     </span>
 
     <input
