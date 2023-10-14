@@ -5,10 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 abstract class JobsFilterEndpoint extends \Pjs\RestApi\FrontEnd\FrontEndEndpoint
 {
-  protected function get_route() : string
+  final protected function get_route() : string
   {
-    return parent::get_route() . 'jobs-filter/';
+    return parent::get_route() . 'jobs-filter/' . $this->get_route_suffix();
   }
+
+  abstract protected function get_route_suffix() : string;
 
   protected function get_methods() : array
   {

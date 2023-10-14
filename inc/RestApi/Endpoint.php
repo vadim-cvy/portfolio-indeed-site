@@ -1,26 +1,37 @@
 <?php
 namespace Pjs\RestApi;
 
+use WP_Error;
+use WP_REST_Request;
 use \WP_REST_Response;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
 {
+  const ARG_TYPE_STR = 'string';
+  const ARG_TYPE_INT = 'integer';
+  const ARG_TYPE_FLOAT = 'number';
+  const ARG_TYPE_BOOL = 'boolean';
+  const ARG_TYPE_ARR = 'array';
+  const ARG_TYPE_OBJ = 'object';
+
+  protected $request = null;
+
   protected function __construct()
   {
-    add_action( 'rest_api_init', [ $this, '_register' ] );
+    add_action( 'rest_api_init', fn() => $this->register() );
   }
 
-  public function _register() : void
+  private function register() : void
   {
     $route = '/' . $this->get_route();
 
     register_rest_route( $this->get_namespace(), $route, [
       'methods' => $this->get_methods(),
-      'callback' => [ $this, '_get_response' ],
-      'permission_callback' => [ $this, '_check_authorized' ],
-      'args' => $this->get_args(),
+      'callback' => fn( WP_REST_Request $request ) => $this->handle_request( $request ),
+      'permission_callback' => fn() => $this->check_authorized(),
+      'args' => $this->get_args_data(),
     ]);
   }
 
@@ -28,19 +39,18 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
 
   abstract protected function get_methods() : array;
 
-  protected function get_args() : array
-  {
-    return [];
-  }
+  abstract protected function get_args_data() : array;
 
-  public final function _get_response() : WP_REST_Response
+  private function handle_request( WP_REST_Request $request ) : WP_REST_Response
   {
+    $this->request = $request;
+
     return $this->get_response();
   }
 
   abstract protected function get_response() : WP_REST_Response;
 
-  public final function _check_authorized() : bool
+  private function check_authorized() : bool
   {
     return $this->is_authorized();
   }
@@ -62,5 +72,44 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
   protected final function get_namespace() : string
   {
     return 'pjs/v1';
+  }
+
+  protected function build_arg_error( string $message, string $code = 'invalid_value' ) : WP_Error
+  {
+    return new WP_Error( $code, $message );
+  }
+
+  protected function get_arg( string $key )
+  {
+    $arg_data = $this->get_args_data()[ $key ] ?? null;
+
+    if ( ! $arg_data )
+    {
+      throw new \Exception( "Param \"$key\" is not registered for this endpoint!" );
+    }
+
+    $val = $this->request->get_param( $key );
+
+    if ( ! isset( $val ) )
+    {
+      return $val;
+    }
+
+    switch ( $arg_data['type'] )
+    {
+      case static::ARG_TYPE_INT:
+        $val = (int) $val;
+        break;
+
+      case static::ARG_TYPE_FLOAT:
+        $val = (float) $val;
+        break;
+
+      case static::ARG_TYPE_BOOL:
+        $val = (bool) $val;
+        break;
+    }
+
+    return $val;
   }
 }

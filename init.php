@@ -11,4 +11,4 @@ define( 'PJS_CSS_PATH', PJS_ASSETS_PATH . 'css/' );
 
 \Pjs\Shortcodes\JobsFilter::get_instance();
 
-Pjs\RestApi\FrontEnd\JobsFilter\Search::get_instance();
+\Pjs\RestApi\FrontEnd\JobsFilter\Search\SearchEndpoint::get_instance();
