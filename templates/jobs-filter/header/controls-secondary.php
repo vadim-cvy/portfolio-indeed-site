@@ -1,14 +1,14 @@
-<div class="pjs-filter__controls_secondary">
+<div class="pjs-filter__secondary-controls">
   <div
-    class="pjs-filter__control pjs-filter__control_type_select"
+    class="pjs-filter__secondary-controls__control"
     v-for="(control, controlIndex) in controls.secondary"
     :key="controlIndex"
   >
-    <span class="pjs-filter__control__label">
+    <span class="pjs-filter__secondary-controls__control__label">
       {{ control.label }}
     </span>
 
-    <div class="pjs-filter__control__options">
+    <div class="pjs-filter__secondary-controls__control__options">
       <a
         href="#"
         v-for="(option, optionIndex) in control.options"

@@ -1,0 +1,38 @@
+.pjs-filter__main-controls
+{
+  display: grid;
+  grid-template-columns: 1fr 1fr 10em;
+  border: 1px solid black;
+
+  &__control
+  {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+
+    &__label,
+    &__icon-wrapper
+    {
+      display: flex;
+      align-items: center;
+      background-color: gray;
+      color: white;
+      padding: 0 .5em;
+      cursor: pointer;
+    }
+
+    &__input
+    {
+      width: 100%;
+      border: none !important;
+    }
+
+    &__tip
+    {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+    }
+  }
+}

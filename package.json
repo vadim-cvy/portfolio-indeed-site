@@ -1,17 +1,19 @@
 {
   "scripts": {
-    "dev": "webpack --watch --config webpack.dev.config.js",
-    "build": "webpack --config webpack.prod.config.js"
+    "dev": "gulp watch && webpack --watch --config webpack.dev.config.js",
+    "build": "gulp && webpack --config webpack.prod.config.js"
   },
   "devDependencies": {
-    "css-loader": "^6.8.1",
     "glob": "^10.3.4",
-    "mini-css-extract-plugin": "^2.7.6",
-    "sass": "^1.68.0",
-    "sass-loader": "^13.3.2",
     "ts-loader": "^9.4.4",
     "typescript": "^5.2.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^5.1.0"
   }
 }
