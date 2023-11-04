@@ -1,38 +1,61 @@
+@use '../vars/palette';
+@use '../vars/animation';
+
 .pjs-filter__secondary-controls
 {
-  display: grid;
-  grid-template-columns: 1fr 1fr 10em;
-  border: 1px solid black;
+  display: flex;
+  margin-left: -1em;
+  margin-right: -1em;
 
   &__control
   {
     position: relative;
-    display: flex;
-    align-items: stretch;
+    width: 100%;
+    margin: 0 1em 2em;
+    background-color: palette.$color-1;
+    transition: animation.$transition;
 
-    &__label,
-    &__icon-wrapper
+    &:hover
     {
-      display: flex;
-      align-items: center;
-      background-color: gray;
-      color: white;
-      padding: 0 .5em;
+      background-color: palette.$color-2;
+    }
+
+    &__label
+    {
+      display: block;
+      padding: 1em;
       cursor: pointer;
     }
 
-    &__input
+    &__options
     {
-      width: 100%;
-      border: none !important;
+      position: absolute;
+      z-index: -1;
+      left: 0;
+      top: 100%;
+      opacity: 0;
+      min-width: 100%;
+      transition: animation.$transition;
+      background-color: palette.$color-1;
+      overflow: hidden;
+
+      &__option
+      {
+        display: block;
+        width: 100%;
+        padding: .5em 1em;
+
+        &:hover
+        {
+          background-color: palette.$color-2;
+        }
+      }
     }
 
-    &__tip
+    &:hover &__options
     {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
+      z-index: unset;
+      opacity: 1;
     }
   }
 }

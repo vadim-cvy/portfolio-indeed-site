@@ -35,26 +35,20 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
   {
     if ( JobsFilterPage::is_current() )
     {
-      // todo: create package for exactly my package(theme/plugin) boilerplate (extend WP\Assets\...) and use it here.
-      $entry_point_name = 'jobs-filter';
+      $assets_abs_path = get_stylesheet_directory() . '/assets/dist/';
+      $assets_url = get_stylesheet_directory_uri() . '/assets/dist/';
 
-      $assets_rel_path = "/assets/dist/$entry_point_name/";
+      $css_file_rel_path = 'css/jobs-filter/index.min.css';
+      $js_file_rel_path = 'js/jobs-filter/index.dev.js';
 
-      $assets_abs_path = get_stylesheet_directory() . $assets_rel_path;
-      $assets_url = get_stylesheet_directory_uri() . $assets_rel_path;
+      $css_url = $assets_url . $css_file_rel_path;
+      $css_ver = filemtime( $assets_abs_path . $css_file_rel_path );
 
-      $css_url = $assets_url . 'index.css';
-      $css_ver = filemtime( $assets_abs_path . 'index.css' );
+      $js_url = $assets_url . $js_file_rel_path;
+      $js_ver = filemtime( $assets_abs_path . $js_file_rel_path );
 
-      $css_url = $assets_url . 'index.css';
-      $css_ver = filemtime( $assets_abs_path . 'index.css' );
-
-      $js_url = $assets_url . 'index.dev.js';
-      // todo: handle prod as well
-      $js_ver = filemtime( $assets_abs_path . 'index.dev.js' );
-
-      wp_enqueue_style( $entry_point_name, $css_url, [], $css_ver );
-      wp_enqueue_script( $entry_point_name, $js_url, [], $js_ver );
+      wp_enqueue_style( 'jobs-filter', $css_url, [], $css_ver );
+      wp_enqueue_script( 'jobs-filter', $js_url, [], $js_ver );
     }
   }
 }

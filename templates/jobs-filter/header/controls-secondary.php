@@ -4,9 +4,9 @@
     v-for="(control, controlIndex) in controls.secondary"
     :key="controlIndex"
   >
-    <span class="pjs-filter__secondary-controls__control__label">
+    <a href="#" class="pjs-filter__secondary-controls__control__label">
       {{ control.label }}
-    </span>
+    </a>
 
     <div class="pjs-filter__secondary-controls__control__options">
       <a
@@ -14,6 +14,7 @@
         v-for="(option, optionIndex) in control.options"
         :key="optionIndex"
         @click="() => control.val = option.val"
+        class="pjs-filter__secondary-controls__control__options__option"
       >
         {{ option.label }}
       </a>
