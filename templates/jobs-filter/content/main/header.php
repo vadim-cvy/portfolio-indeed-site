@@ -1,4 +1,4 @@
-<div class="pjs-filter__result__column_items__header">
+<div class="pjs-filter__content__column-main__header">
   <div class="pjs-filter__search-term">
     {{ controls.main.searchTerm.val }} jobs
   </div>

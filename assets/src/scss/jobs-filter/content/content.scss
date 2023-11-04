@@ -1,0 +1,16 @@
+@import './job-card.scss';
+
+.pjs-filter__content
+{
+  display: grid;
+  grid-template-columns: 1fr 60%;
+  column-gap: 2em;
+
+  &__column-main
+  {
+    &__header
+    {
+      margin-bottom: 2em;
+    }
+  }
+}
