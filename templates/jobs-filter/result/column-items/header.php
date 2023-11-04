@@ -3,7 +3,7 @@
     {{ controls.main.searchTerm.val }} jobs
   </div>
 
-  <div class="pjs-filter__controls_sorting">
+  <div class="pjs-filter__sorting-controls">
     Sort by:
 
     <a
