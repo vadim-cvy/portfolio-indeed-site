@@ -1,6 +1,8 @@
 import { createApp, ref } from "vue";
 import Control from "./Control";
 import ControlOption from "./ControlOption";
+import Job from "./Job";
+import JobDetailsBox from "./JobDetailsBox";
 
 createApp({
   setup()
@@ -25,36 +27,20 @@ createApp({
       new ControlOption( 'date', 'Date' ),
     ]))
 
-    const totalMatches = ref( 0 )
-
     const jobs = ref([
-      {
-        title: 'Test 1',
-      },
-      {
-        title: 'Test 2',
-      }
+      new Job( 'Test 1' ),
+      new Job( 'Test 2' ),
     ])
 
-    const detailsCard = ref({
-      isVisible: true,
-      job: {
-        title: 'Test',
-      },
-    })
+    const jobDetailsBox = ref( JobDetailsBox )
 
     return {
       searchTermVal,
       locationVal,
       secondaryControls,
       sortingControl,
-      totalMatches,
       jobs,
-      detailsCard,
+      jobDetailsBox
     }
-  },
-
-  methods: {
-
   },
 }).mount('#pjs-filter')

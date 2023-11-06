@@ -21,6 +21,6 @@
   </div>
 
   <div class="pjs-filter__total-matches">
-    {{ totalMatches }} jobs
+    {{ jobs.length }} jobs
   </div>
 </div>
