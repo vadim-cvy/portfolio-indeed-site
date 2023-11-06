@@ -1,0 +1,15 @@
+.pjs-filter__sorting__option
+{
+  display: inline-block;
+  margin-right: 1em;
+
+  &:last-child
+  {
+    margin-right: 0;
+  }
+
+  &_is-selected
+  {
+    font-weight: 700;
+  }
+}

@@ -1,18 +1,22 @@
 <div class="pjs-filter__content__column-main__header">
   <div class="pjs-filter__search-term">
-    {{ controls.main.searchTerm.val }} jobs
+    {{ searchTermVal }} jobs
   </div>
 
-  <div class="pjs-filter__sorting-controls">
-    Sort by:
+  <div class="pjs-filter__sorting">
+    {{ sortingControl.label }}:
 
     <a
       href="#"
-      v-for="(control, controlIndex) controls.sorting"
-      :key="controlIndex"
-      @click="() => sortBy( control )"
+      v-for="option in sortingControl.options"
+      :key="option.val"
+      @click="() => sortingControl.toggleSelection( option )"
+      :class="{
+        'pjs-filter__sorting__option': true,
+        'pjs-filter__sorting__option_is-selected': sortingControl.selectedOption === option,
+      }"
     >
-      {{ control.label }}
+      {{ option.label }}
     </a>
   </div>
 

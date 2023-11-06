@@ -9,7 +9,7 @@
       placeholder="Job title, keywords, or company"
       minlength="2"
       class="pjs-filter__main-controls__control__input"
-      v-model="controls.main.searchTerm.val"
+      v-model="searchTermVal"
     >
 
     <span class="pjs-filter__main-controls__control__icon-wrapper">
@@ -26,7 +26,7 @@
       type="text"
       placeholder="<?php echo esc_attr( 'City, state, zip code, or "remote"' ); ?>"
       class="pjs-filter__main-controls__control__input"
-      v-model="controls.main.location.val"
+      v-model="locationVal"
     >
 
     <span class="pjs-filter__main-controls__control__icon-wrapper">

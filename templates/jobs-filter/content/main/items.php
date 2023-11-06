@@ -3,7 +3,7 @@
     class="pjs-filter__job-card"
     v-for="(job, jobIndex) in jobs"
     :key="jobIndex"
-    @click="() => openDetails( jobIndex )"
+    @click="() => openJobDetails( jobIndex )"
   >
     {{ job.title }}
   </div>

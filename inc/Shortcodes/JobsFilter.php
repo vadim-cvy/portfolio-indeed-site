@@ -35,20 +35,49 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
   {
     if ( JobsFilterPage::is_current() )
     {
-      $assets_abs_path = get_stylesheet_directory() . '/assets/dist/';
-      $assets_url = get_stylesheet_directory_uri() . '/assets/dist/';
-
-      $css_file_rel_path = 'css/jobs-filter/index.min.css';
-      $js_file_rel_path = 'js/jobs-filter/index.dev.js';
-
-      $css_url = $assets_url . $css_file_rel_path;
-      $css_ver = filemtime( $assets_abs_path . $css_file_rel_path );
-
-      $js_url = $assets_url . $js_file_rel_path;
-      $js_ver = filemtime( $assets_abs_path . $js_file_rel_path );
-
-      wp_enqueue_style( 'jobs-filter', $css_url, [], $css_ver );
-      wp_enqueue_script( 'jobs-filter', $js_url, [], $js_ver );
+      $this->enqueue_css();
+      $this->enqueue_js();
     }
+  }
+
+  private function enqueue_css() : void
+  {
+    $file_name = 'index.min.css';
+
+    $url = $this->get_asset_url( 'css', $file_name );
+    $ver = filemtime( $this->get_asset_path( 'css', $file_name ) );
+
+    wp_enqueue_style( 'pjs-jobs-filter', $url, [], $ver );
+  }
+
+  private function enqueue_js() : void
+  {
+    wp_enqueue_script( 'pjs-vue', 'https://unpkg.com/vue@3.3.7/dist/vue.global.js', [], null, [
+      'in_footer' => true,
+    ]);
+
+    $file_name = 'index.dev.js';
+
+    $url = $this->get_asset_url( 'js', $file_name );
+    $ver = filemtime( $this->get_asset_path( 'js', $file_name ) );
+
+    wp_enqueue_script( 'pjs-jobs-filter', $url, [ 'pjs-vue' ], $ver, [
+      'in_footer' => true,
+    ]);
+  }
+
+  private function get_asset_url( string $asset_type, string $file_name ) : string
+  {
+    return get_stylesheet_directory_uri() . $this->get_asset_rel_path( $asset_type, $file_name );
+  }
+
+  private function get_asset_path( string $asset_type, string $file_name ) : string
+  {
+    return get_stylesheet_directory() . $this->get_asset_rel_path( $asset_type, $file_name );
+  }
+
+  private function get_asset_rel_path( string $asset_type, string $file_name ) : string
+  {
+    return "/assets/dist/$asset_type/jobs-filter/$file_name";
   }
 }
