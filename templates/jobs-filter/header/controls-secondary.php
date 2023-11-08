@@ -1,11 +1,11 @@
 <div class="pjs-filter__secondary-controls">
   <div
     class="pjs-filter__secondary-controls__control"
-    v-for="(control, controlIndex) in secondaryControls"
-    :key="controlIndex"
+    v-for="control in controls.secondary"
+    :key="control.name"
   >
     <a href="#" class="pjs-filter__secondary-controls__control__label">
-      {{ control.selectedOption ? control.selectedOption.label : control.label }}
+      {{ control.selectedOptionLabel }}
     </a>
 
     <div class="pjs-filter__secondary-controls__control__options">
@@ -13,7 +13,7 @@
         href="#"
         v-for="option in control.options"
         :key="option.val"
-        @click="() => control.toggleSelection( option )"
+        @click="() => updateControlVal( control, option.val )"
         class="pjs-filter__secondary-controls__control__options__option"
       >
         {{ option.label }}

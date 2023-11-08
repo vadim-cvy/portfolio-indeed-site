@@ -1,4 +1,4 @@
-export default class ControlOption
+export default class Option
 {
   public constructor(
     public readonly val: string | number,
