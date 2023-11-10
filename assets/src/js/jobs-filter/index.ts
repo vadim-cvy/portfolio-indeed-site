@@ -6,6 +6,7 @@ import OptionsControl from "./controls/OptionsControl";
 import SearchTermControl from "./controls/SearchTermControl";
 import Job from "./jobs/Job";
 import JobDetailsBox from "./jobs/JobDetailsBox";
+import axios, { AxiosRequestConfig } from 'axios'
 
 createApp({
   setup()
@@ -73,8 +74,6 @@ createApp({
       if ( clearPrev )
       {
         clearSubmissionData()
-
-        const now = new Date()
 
         while ( true )
         {
@@ -145,33 +144,63 @@ createApp({
     // todo: handle errors
     const findMatches = () => new Promise<Job[]>( ( resolve, reject ) =>
     {
-      const submissionId = activeSubmissionId
-
       activeSubmissionConsoleLog( 'Looking for matches' )
 
-      const matches: Job[] = []
+      const controlVals: { [key: string]: string | number } = {}
 
-      for ( let i = 0; i <= 4; i++ )
+      for ( const item of Object.values( controls.value ) )
       {
-        const id = Math.floor(Math.random() * 1000)
-
-        const fakeJob = new Job( id, `Fake ${id}` )
-
-        matches.push( fakeJob )
+        if ( item instanceof Control )
+        {
+          controlVals[ item.name ] = item.val
+        }
+        else if ( Array.isArray( item ) )
+        {
+          item.map( control => controlVals[ control.name ] = control.val )
+        }
       }
 
-      // Todo: replace with real request
-      setTimeout(() =>
+      const params: AxiosRequestConfig['params'] = {}
+
+      for ( const key in controlVals )
       {
-        if ( submissionId !== activeSubmissionId )
+        const val = controlVals[ key ]
+
+        if ( val !== '' )
         {
-          reject( `Request is not actual anymore. Active submission id is ${activeSubmissionId} while request was made for ${submissionId} submission` )
+          const snakeCaseKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+
+          params[ snakeCaseKey ] = val
         }
-        else
-        {
-          resolve( matches )
-        }
-      }, 1000 )
+      }
+
+      activeSubmissionConsoleLog( 'API request params:' )
+      console.log( params )
+
+      const submissionId = activeSubmissionId
+
+      // todo: handle errors
+      axios.get( '/wp-json/pjs/v1/frontend/jobs-filter/search', { params } )
+      .then( response =>
+      {
+        // todo: handle errors sent by API (but maybe use status codes in API)
+
+        const matches = response.data
+
+console.log( matches )
+throw new Error( 'This method is not completed, so I\'m throwing an error.' )
+        // if ( submissionId !== activeSubmissionId )
+        // {
+        //   reject(
+        //     'Request is not actual anymore.'
+        //     + ` Active submission id is ${activeSubmissionId} while request was made for ${submissionId} submission`
+        //   )
+        // }
+        // else
+        // {
+        //   resolve( matches )
+        // }
+      })
     })
 
     const activeSubmissionConsoleLog = ( msg: string ) =>
