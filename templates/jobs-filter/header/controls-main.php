@@ -9,7 +9,7 @@
       placeholder="Job title, keywords, or company"
       minlength="2"
       class="pjs-filter__main-controls__control__input"
-      @change="e => updateControlVal( controls.searchTerm, e.target.value )"
+      @input="e => updateControlVal( controls.searchTerm, e.target.value )"
     >
 
     <span class="pjs-filter__main-controls__control__icon-wrapper">
@@ -26,7 +26,7 @@
       type="text"
       placeholder="<?php echo esc_attr( 'City, state, zip code, or "remote"' ); ?>"
       class="pjs-filter__main-controls__control__input"
-      @change="e => updateControlVal( controls.location, e.target.value )"
+      @input="e => updateControlVal( controls.location, e.target.value )"
     >
 
     <span class="pjs-filter__main-controls__control__icon-wrapper">

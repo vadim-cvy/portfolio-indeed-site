@@ -1,4 +1,4 @@
-<div class="pjs-filter__secondary-controls">
+<div class="pjs-filter__secondary-controls" v-if="controls.searchTerm.val.length">
   <div
     class="pjs-filter__secondary-controls__control"
     v-for="control in controls.secondary"

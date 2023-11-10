@@ -1,6 +1,6 @@
 <div class="pjs-filter__content__column-main__header">
   <div class="pjs-filter__search-term">
-    {{ controls.searchTerm.val }} jobs
+    "{{ controls.searchTerm.val }}" jobs
   </div>
 
   <div class="pjs-filter__sorting">
@@ -21,6 +21,6 @@
   </div>
 
   <div class="pjs-filter__total-matches">
-    {{ matches.length }} jobs
+    {{ isLoading || controls.searchTerm.val !== matches.searchTerm ? '...' : matches.jobs.length }} jobs
   </div>
 </div>
