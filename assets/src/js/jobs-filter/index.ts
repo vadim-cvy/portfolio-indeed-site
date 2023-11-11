@@ -6,7 +6,7 @@ import OptionsControl from "./controls/OptionsControl";
 import SearchTermControl from "./controls/SearchTermControl";
 import Job from "./jobs/Job";
 import JobDetailsBox from "./jobs/JobDetailsBox";
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
 createApp({
   setup()
@@ -60,7 +60,9 @@ createApp({
         return
       }
 
-      const submitDelay = isSearchTerm ? 1200 : 800
+      // todo: uncomment
+      // const submitDelay = isSearchTerm ? 1200 : 800
+      const submitDelay = isSearchTerm ? 500 : 100
 
       submit( submitDelay )
     }
@@ -160,7 +162,9 @@ createApp({
         }
       }
 
-      const params: AxiosRequestConfig['params'] = {}
+      const params: AxiosRequestConfig['params'] = {
+        country_id: pjsJobsFilter.countryId,
+      }
 
       for ( const key in controlVals )
       {
@@ -183,8 +187,6 @@ createApp({
       axios.get( '/wp-json/pjs/v1/frontend/jobs-filter/search', { params } )
       .then( response =>
       {
-        // todo: handle errors sent by API (but maybe use status codes in API)
-
         const matches = response.data
 
 console.log( matches )
@@ -201,10 +203,24 @@ throw new Error( 'This method is not completed, so I\'m throwing an error.' )
         //   resolve( matches )
         // }
       })
+      .catch( ( e: AxiosError ) =>
+      {
+        swal.fire(
+          'Something goes wrong',
+          'Please, try to reload the page.',
+          'warning'
+        )
+
+        submissionConsoleLog( Number( submissionId ), 'Axios error: ' );
+        console.log( e )
+      })
     })
 
     const activeSubmissionConsoleLog = ( msg: string ) =>
-      console.log( `Submission ${activeSubmissionId}: ${msg}` )
+      submissionConsoleLog( Number( activeSubmissionId ), msg )
+
+    const submissionConsoleLog = ( submissionId: number, msg: string ) =>
+      console.log( `Submission ${submissionId}: ${msg}` )
 
     return {
       matches,

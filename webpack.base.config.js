@@ -34,5 +34,6 @@ module.exports = () => ({
   },
   externals: {
     vue: 'Vue',
+    swal: 'Swal',
   },
 })

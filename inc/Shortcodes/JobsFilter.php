@@ -52,16 +52,29 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
 
   private function enqueue_js() : void
   {
-    wp_enqueue_script( 'pjs-vue', 'https://unpkg.com/vue@3.3.7/dist/vue.global.js', [], null, [
+    $vue_handle = 'pjs-vue';
+
+    wp_enqueue_script( $vue_handle, 'https://unpkg.com/vue@3.3.7/dist/vue.global.js', [], null, [
       'in_footer' => true,
     ]);
+
+    $main_handle = 'pjs-jobs-filter';
 
     $file_name = 'index.dev.js';
 
     $url = $this->get_asset_url( 'js', $file_name );
     $ver = filemtime( $this->get_asset_path( 'js', $file_name ) );
 
-    wp_enqueue_script( 'pjs-jobs-filter', $url, [ 'pjs-vue' ], $ver, [
+    wp_enqueue_script( $main_handle, $url, [ $vue_handle ], $ver, [
+      'in_footer' => true,
+    ]);
+
+    wp_localize_script( $main_handle, 'pjsJobsFilter', [
+      // todo: get dynamically
+      'countryId' => 2,
+    ]);
+
+    wp_enqueue_script( 'pjs-swal-2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11.9.0/dist/sweetalert2.all.min.js', [], null , [
       'in_footer' => true,
     ]);
   }
