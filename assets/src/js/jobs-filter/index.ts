@@ -92,18 +92,18 @@ createApp({
         console.log( `New submission id: ${activeSubmissionId}` )
       }
 
-      const submissionId = activeSubmissionId
+      const submissionId = Number( activeSubmissionId )
 
       if ( delay )
       {
-        activeSubmissionConsoleLog( `Delaying for ${delay} ms` )
+        submissionLog( submissionId, `Delaying for ${delay} ms` )
 
         activeSubmissionTimer = setTimeout( () => submit( 0, false ), delay )
 
         return
       }
 
-      activeSubmissionConsoleLog( 'Processing' )
+      submissionLog( submissionId, 'Processing' )
 
       isLoading.value = true
 
@@ -115,14 +115,18 @@ createApp({
       findMatches()
       .then( jobs =>
       {
-        activeSubmissionConsoleLog( 'Found matches:' )
-        console.log( jobs )
+        if ( submissionId !== activeSubmissionId )
+        {
+          submissionLog( submissionId, 'Ignoring submission results as submission is not actual anymore.', 'debug' )
+        }
+        else
+        {
+          submissionLog( submissionId, 'Found matches:' )
+          console.log( jobs )
 
-        matches.value.jobs = jobs
+          matches.value.jobs = jobs
+        }
       })
-      .catch( errMsg => console.log(
-        `Can't find matches for ${submissionId} submission. Error: ${errMsg}`
-      ))
       .finally( () => isLoading.value = false )
     }
 
@@ -132,7 +136,7 @@ createApp({
 
       if ( activeSubmissionTimer )
       {
-        activeSubmissionConsoleLog( 'Clearing timer' );
+        submissionLog( Number( activeSubmissionId ), 'Clearing timer' );
 
         clearTimeout( activeSubmissionTimer )
       }
@@ -140,13 +144,17 @@ createApp({
       // todo if request is sent - abort prev request
 
       isLoading.value = false
+
+      activeSubmissionId = null
     }
 
     // todo: send real request
     // todo: handle errors
     const findMatches = () => new Promise<Job[]>( ( resolve, reject ) =>
     {
-      activeSubmissionConsoleLog( 'Looking for matches' )
+      const submissionId = Number( activeSubmissionId )
+
+      submissionLog( submissionId, 'Looking for matches' )
 
       const controlVals: { [key: string]: string | number } = {}
 
@@ -178,30 +186,37 @@ createApp({
         }
       }
 
-      activeSubmissionConsoleLog( 'API request params:' )
-      console.log( params )
-
-      const submissionId = activeSubmissionId
+      submissionLog( submissionId, 'API request params:', 'debug' )
+      console.debug( params )
 
       // todo: handle errors
       axios.get( '/wp-json/pjs/v1/frontend/jobs-filter/search', { params } )
       .then( response =>
       {
-        const matches = response.data
+        const dbQueriesTotalTime =
+          response.data.debug.db
+          .map( ( query: { time: number } ) => query.time )
+          .reduce( ( accamulator: number, curent: number ) => accamulator + curent )
 
-console.log( matches )
-throw new Error( 'This method is not completed, so I\'m throwing an error.' )
-        // if ( submissionId !== activeSubmissionId )
-        // {
-        //   reject(
-        //     'Request is not actual anymore.'
-        //     + ` Active submission id is ${activeSubmissionId} while request was made for ${submissionId} submission`
-        //   )
-        // }
-        // else
-        // {
-        //   resolve( matches )
-        // }
+        submissionLog(
+          submissionId,
+          `API request DB queries total time: ${dbQueriesTotalTime.toFixed(3)}`,
+          'debug'
+        )
+
+        if ( dbQueriesTotalTime > 0.2 )
+        {
+          submissionLog( submissionId, 'DB queries total time is more than 200ms', 'warn' )
+        }
+
+        if ( response.data.status !== 'success' )
+        {
+          // todo: handle
+        }
+
+        const matches = response.data.matches as Job[]
+
+        resolve( matches )
       })
       .catch( ( e: AxiosError ) =>
       {
@@ -211,16 +226,28 @@ throw new Error( 'This method is not completed, so I\'m throwing an error.' )
           'warning'
         )
 
-        submissionConsoleLog( Number( submissionId ), 'Axios error: ' );
+        submissionLog( submissionId, 'Axios error: ' );
         console.log( e )
       })
     })
 
-    const activeSubmissionConsoleLog = ( msg: string ) =>
-      submissionConsoleLog( Number( activeSubmissionId ), msg )
+    const submissionLog = (
+      submissionId: number,
+      msg: string,
+      type: 'log' | 'debug' | 'warn' = 'log'
+    ) =>
+    {
+      let prefix = 'Submission ' + submissionId
 
-    const submissionConsoleLog = ( submissionId: number, msg: string ) =>
-      console.log( `Submission ${submissionId}: ${msg}` )
+      if ( submissionId === activeSubmissionId )
+      {
+        prefix += ' (active)'
+      }
+
+      prefix += ': '
+
+      console[ type ]( prefix + msg )
+    }
 
     return {
       matches,

@@ -5,30 +5,85 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class DB
 {
-  static public function get_results( string $sql, array $placeholder_values = [] ) : array
-  {
-    global $wpdb;
+  static private $cache = [];
 
-    return $wpdb->get_results( static::replace_placeholders( $sql, $placeholder_values ) );
+  static private $debug_data = [];
+
+  static public function get_results(
+    string $sql,
+    array $placeholder_values = [],
+    bool $return_cached = true
+  ) : array
+  {
+    return static::select( 'get_results', $sql, $placeholder_values, $return_cached );
   }
 
-  static public function replace_placeholders( string $sql, array $placeholder_values = [] ) : string
+  static public function get_var(
+    string $sql,
+    array $placeholder_values = [],
+    bool $return_cached = true
+  ) : string | int | float
+  {
+    $val = static::select( 'get_var', $sql, $placeholder_values, $return_cached );
+
+    if ( is_numeric( $val ) )
+    {
+      $val =
+        (int) $val == (float) $val ?
+        (int) $val :
+        (float) $val;
+    }
+    else if ( ! isset( $val ) )
+    {
+      $val = '';
+    }
+
+    return $val;
+  }
+
+  static private function select(
+    string $wpdb_method_name,
+    string $sql,
+    array $placeholder_values = [],
+    bool $return_cached = true
+  )
   {
     global $wpdb;
 
-    $placeholder_pattern = '~%\w{(\w+)}~';
+    $sql = $wpdb->prepare( $sql, $placeholder_values );
 
-    preg_match_all( $placeholder_pattern, $sql, $placeholder_matches );
+    $start_time_nanosec = hrtime( true );
 
-    $wpdb_prepare_args = [];
+    $is_result_from_cache = false;
 
-    foreach ( $placeholder_matches[1] as $placeholder_key )
+    if ( $return_cached && isset( static::$cache[ $sql ] ) )
     {
-      $sql = str_replace( '{' . $placeholder_key . '}', '', $sql );
+      $result = static::$cache[ $sql ];
 
-      $wpdb_prepare_args[] = $placeholder_values[ $placeholder_key ];
+      $is_result_from_cache = true;
+    }
+    else
+    {
+      $result = $wpdb->$wpdb_method_name( $sql );
+
+      static::$cache[ $sql ] = $result;
     }
 
-    return $wpdb->prepare( $sql, $wpdb_prepare_args );
+    $end_time_nanosec = hrtime( true );
+
+    $operation_time_nanosec = $end_time_nanosec - $start_time_nanosec;
+
+    static::$debug_data[] = [
+      'query' => $sql,
+      'time' => round( $operation_time_nanosec / 1e9, 5 ),
+      'is_from_cache' => $is_result_from_cache,
+    ];
+
+    return $result;
+  }
+
+  static public function get_debug_data() : array
+  {
+    return static::$debug_data;
   }
 }

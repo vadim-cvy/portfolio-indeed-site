@@ -1,22 +1,15 @@
 <?php
 namespace Pjs\RestApi;
 
-use WP_Error;
 use WP_REST_Request;
-use \WP_REST_Response;
+use WP_REST_Response;
+use Pjs\DB\DB;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
 {
-  const ARG_TYPE_STR = 'string';
-  const ARG_TYPE_INT = 'integer';
-  const ARG_TYPE_FLOAT = 'number';
-  const ARG_TYPE_BOOL = 'boolean';
-  const ARG_TYPE_ARR = 'array';
-  const ARG_TYPE_OBJ = 'object';
-
-  protected $request = null;
+  private $args;
 
   protected function __construct()
   {
@@ -31,7 +24,7 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
       'methods' => $this->get_methods(),
       'callback' => fn( WP_REST_Request $request ) => $this->handle_request( $request ),
       'permission_callback' => fn() => $this->check_authorized(),
-      'args' => $this->get_args_data(),
+      'args' => $this->get_args_scheme()->get_wp_formatted(),
     ]);
   }
 
@@ -39,14 +32,53 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
 
   abstract protected function get_methods() : array;
 
-  abstract protected function get_args_data() : array;
+  abstract protected function get_args_scheme() : ArgsScheme;
 
   private function handle_request( WP_REST_Request $request ) : WP_REST_Response
   {
-    $this->request = $request;
+    try
+    {
+      $this->set_args( $request->get_params() );
+    }
+    catch ( ArgValidationError $e )
+    {
+      return $this->build_error_response( $e->getMessage() );
+    }
 
     return $this->get_response();
   }
+
+  private function set_args( array $args ) : void
+  {
+    foreach ( $this->get_args_scheme()->get_all() as $key => $scheme )
+    {
+      $value = $args[ $key ] ?? null;
+
+      if ( $scheme->get_is_required() && ( ! isset( $value ) || $value === '' ) )
+      {
+        ArgValidationError::throw( $key, 'Argument is required but is missed.' );
+      }
+
+      if ( $scheme->get_type() === ArgScheme::TYPE_FLOAT )
+      {
+        $value = (float) $value;
+      }
+
+      $args[ $key ] = $value;
+    }
+
+    foreach ( $args as $key => $value )
+    {
+      if ( ! in_array( $key, $this->get_args_scheme()->get_keys() ) )
+      {
+        ArgValidationError::throw( $key, 'Argument does not appear in allowed arguments list.' );
+      }
+
+      $this->args[ $key ] = $this->normalize_arg_value( $key, $value );
+    }
+  }
+
+  abstract protected function normalize_arg_value( string $key, mixed $value ) : mixed;
 
   abstract protected function get_response() : WP_REST_Response;
 
@@ -59,14 +91,23 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
 
   protected function build_success_response( array $data = [] ) : WP_REST_Response
   {
-    return $this->build_response( $data, 'success', 200 );
+    return $this->build_response( $data, 'success' );
   }
 
-  protected function build_response( array $data, string $status, int $code ) : WP_REST_Response
+  protected function build_error_response( string $err_msg ) : WP_REST_Response
+  {
+    return $this->build_response( [ 'error_message' => $err_msg ], 'error' );
+  }
+
+  private function build_response( array $data, string $status ) : WP_REST_Response
   {
     $data['status'] = $status;
 
-    return new WP_REST_Response( $data, $code );
+    $data['debug'] = [
+      'db' => DB::get_debug_data()
+    ];
+
+    return new WP_REST_Response( $data, 200 );
   }
 
   protected final function get_namespace() : string
@@ -74,42 +115,13 @@ abstract class Endpoint extends \Cvy\DesignPatterns\Singleton
     return 'pjs/v1';
   }
 
-  protected function build_arg_error( string $message, string $code = 'invalid_value' ) : WP_Error
+  protected function get_args()
   {
-    return new WP_Error( $code, $message );
+    return array_filter( $this->args );
   }
 
   protected function get_arg( string $key )
   {
-    $arg_data = $this->get_args_data()[ $key ] ?? null;
-
-    if ( ! $arg_data )
-    {
-      throw new \Exception( "Param \"$key\" is not registered for this endpoint!" );
-    }
-
-    $val = $this->request->get_param( $key );
-
-    if ( ! isset( $val ) )
-    {
-      return $val;
-    }
-
-    switch ( $arg_data['type'] )
-    {
-      case static::ARG_TYPE_INT:
-        $val = (int) $val;
-        break;
-
-      case static::ARG_TYPE_FLOAT:
-        $val = (float) $val;
-        break;
-
-      case static::ARG_TYPE_BOOL:
-        $val = (bool) $val;
-        break;
-    }
-
-    return $val;
+    return $this->get_args()[ $key ] ?? null;
   }
 }

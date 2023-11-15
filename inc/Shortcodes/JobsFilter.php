@@ -71,7 +71,7 @@ class JobsFilter extends \Cvy\DesignPatterns\Singleton
 
     wp_localize_script( $main_handle, 'pjsJobsFilter', [
       // todo: get dynamically
-      'countryId' => 2,
+      'countryId' => 1,
     ]);
 
     wp_enqueue_script( 'pjs-swal-2', 'https://cdn.jsdelivr.net/npm/sweetalert2@11.9.0/dist/sweetalert2.all.min.js', [], null , [
