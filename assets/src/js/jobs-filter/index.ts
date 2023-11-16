@@ -193,8 +193,13 @@ createApp({
       axios.get( '/wp-json/pjs/v1/frontend/jobs-filter/search', { params } )
       .then( response =>
       {
+        const dbDebugData = response.data.debug.db
+
+        submissionLog( submissionId, 'DB debug data:', 'debug' )
+        console.debug( dbDebugData )
+
         const dbQueriesTotalTime =
-          response.data.debug.db
+          dbDebugData
           .map( ( query: { time: number } ) => query.time )
           .reduce( ( accamulator: number, curent: number ) => accamulator + curent )
 
