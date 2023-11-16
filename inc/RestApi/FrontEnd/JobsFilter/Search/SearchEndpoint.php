@@ -1,5 +1,7 @@
 <?php
 namespace Pjs\RestApi\FrontEnd\JobsFilter\Search;
+use DateInterval;
+use DateTime;
 use Exception;
 use Pjs\Countries\Country;
 use Pjs\RestApi\ArgScheme;
@@ -73,18 +75,11 @@ class SearchEndpoint extends JobsFilterEndpoint
 
   protected function get_matches() : array
   {
-    $country_code = (new Country( $this->get_arg( 'country_id' ) ))->get_code();
+    $sql = $this->get_sql__select_from([ 'id', 'title' ]);
 
-    // todo: get time range based on the last match. Maybe add arg: "from_time"
-    $period = 'last_day';
+    $where = $this->get_where();
 
-    $table_name = "pjs_jobs__{$country_code}_active_$period";
-
-    $sql = "SELECT id, title FROM $table_name as j ";
-
-    $where = $this->get_jobs_table_where();
-
-    $sql .= 'WHERE ' . $where['sql'];
+    $sql .= $where['sql'];
     $placeholder_values = $where['placeholder_values'];
 
     $sql .= 'ORDER BY j.activation_time DESC ';
@@ -92,7 +87,7 @@ class SearchEndpoint extends JobsFilterEndpoint
     // todo: add arg "page"
     // todo: check if there is any difference (in time) for selecting 10 vs 30 vs 50 vs 100 results at all. Maybe select 30 or 50 on first page if there is no difference. And then select 30 or 50 on each new page
     $sql .= 'LIMIT %d ';
-    $placeholder_values[] = 10; // todo: return 30 on second page and 50 for all the next pages
+    $placeholder_values[] = $this->get_limit(); // todo: return 30 on second page and 50 for all the next pages
 
     /**
      * todo: get from session:
@@ -101,29 +96,95 @@ class SearchEndpoint extends JobsFilterEndpoint
      * I'm not sure if I need to add "WHERE id > first_match_id" as it'll make to apply the condition for all of the thousands results while it'll filter about 100 rows at max.
      * So it is better to test if I can run one more query that will check how much matches are there with "id <= first_match_id" and then calculate offset by the returned number + session total returned matches
      */
-    $sql .= 'OFFSET %d ';
+    $sql .= 'OFFSET %d';
     $placeholder_values[] = 0;
 
     return DB::get_results( $sql, $placeholder_values );
   }
 
-  private function get_jobs_table_where() : array
+  private function get_sql__select_from( array $cols, string $join = '' ) : string
+  {
+    $country_code = (new Country( $this->get_arg( 'country_id' ) ))->get_code();
+
+    // todo: get time range based on the last match. Maybe add arg: "from_time"
+    $period = 'last_day';
+
+    $table_name = "pjs_jobs__{$country_code}_active_$period";
+
+    foreach ( $cols as $i => $col )
+    {
+      // todo: complete list of jobs table columns
+      if ( in_array( $col, [ 'id', 'title', 'activation_time' ] ) )
+      {
+        $col = 'j.' . $col;
+      }
+
+      $cols[ $i ] = $col;
+    }
+
+    $cols_str = implode( ', ', $cols );
+
+    return "SELECT $cols_str FROM $table_name as j $join";
+  }
+
+  private function get_where() : array
+  {
+    $where = $this->get_base_where();
+
+    $is_term_only_search = count( $this->get_filter_fields_args() ) === 1;
+
+    /**
+     * todo: this should not work only for first call but for:
+     * - search ordered by date (not relevance)
+     * - maybe for big tables like last month or last 2 monthes - but that's a question, maybe it'll work ok as is
+     */
+    if ( ! $this->is_first_call() || ! $is_term_only_search )
+    {
+      return $where;
+    }
+
+    $last_day_total_matches = DB::get_var(
+      $this->get_sql__select_from([ 'COUNT(*)' ]) . $where['sql'],
+      $where['placeholder_values']
+    );
+
+    $sec_in_min = 60;
+    $sec_in_day = $sec_in_min * 60 * 24;
+
+    $limit_threthold = $this->get_limit() * 5;
+
+    $activation_time_offset  = floor( $sec_in_day / ( $last_day_total_matches / $limit_threthold ) );
+
+    $max_activation_time_offset = $sec_in_min * 15;
+
+    if ( $activation_time_offset > $max_activation_time_offset )
+    {
+      return $where;
+    }
+
+    $last_job_activation_time = DB::get_var(
+      $this->get_sql__select_from([ 'activation_time' ]) . ' ORDER BY j.activation_time DESC LIMIT 1'
+    );
+
+    $min_activation_time = new DateTime( $last_job_activation_time );
+    $min_activation_time->sub(new DateInterval('PT' . $activation_time_offset . 'S'));
+
+    $where['sql'] .= ' AND j.activation_time >= "%s" ';
+    $where['placeholder_values'][] = $min_activation_time->format('Y-m-d H:i:s');
+
+    $where['sql'] = 'FORCE INDEX(activation_time) ' . $where['sql'];
+
+    return $where;
+  }
+
+  private function get_base_where() : array
   {
     $clauses_sql = [];
 
     $placeholder_values = [];
 
-    foreach ( $this->get_filter_fields_arg_schemes() as $arg_scheme )
+    foreach ( $this->get_filter_fields_args() as $key => $value )
     {
-      $key = $arg_scheme->get_key();
-
-      $value = $this->get_arg( $key );
-
-      if ( ! isset( $value ) )
-      {
-        continue;
-      }
-
       switch ( $key )
       {
         // Todo: ensure mysql mintoken size is 2 chars
@@ -137,7 +198,7 @@ class SearchEndpoint extends JobsFilterEndpoint
           $clause_sql = '%i=';
           $placeholder_values[] = "j.$key";
 
-          switch ( $arg_scheme->get_type() )
+          switch ( $this->get_args_scheme()->get_one( $key )->get_type() )
           {
             case ArgScheme::TYPE_INT:
             case ArgScheme::TYPE_BOOL:
@@ -166,9 +227,29 @@ class SearchEndpoint extends JobsFilterEndpoint
     }
 
     return [
-      'sql' => implode( ' AND ', $clauses_sql ) . ' ',
+      'sql' => 'WHERE ' . implode( ' AND ', $clauses_sql ) . ' ',
       'placeholder_values' => $placeholder_values,
     ];
+  }
+
+  private function get_limit() : int
+  {
+    // todo: maybe make 10-15 for first call
+    return 50;
+  }
+
+  private function get_filter_fields_args() : array
+  {
+    $args = [];
+
+    foreach ( $this->get_filter_fields_arg_schemes() as $arg_scheme )
+    {
+      $key = $arg_scheme->get_key();
+
+      $args[ $key ] = $this->get_arg( $key );
+    }
+
+    return array_filter( $args, fn( $val ) => isset( $val ) );
   }
 
   protected function get_args_scheme() : ArgsScheme
