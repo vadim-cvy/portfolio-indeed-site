@@ -20,10 +20,10 @@ class Country
 
   public function get_code() : string
   {
-    return DB::get_var(
+    return DB::get_var( DB::prepare(
       'SELECT code FROM pjs_countries WHERE id = %d',
       [ $this->id ]
-    );
+    ));
   }
 
   public function exists() : bool

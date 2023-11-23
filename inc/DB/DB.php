@@ -9,22 +9,21 @@ class DB
 
   static private $debug_data = [];
 
-  static public function get_results(
-    string $sql,
-    array $placeholder_values = [],
-    bool $return_cached = true
-  ) : array
+  static public function prepare( string $sql, array $placeholder_values ) : string
   {
-    return static::select( 'get_results', $sql, $placeholder_values, $return_cached );
+    global $wpdb;
+
+    return $wpdb->prepare( $sql, $placeholder_values );
   }
 
-  static public function get_var(
-    string $sql,
-    array $placeholder_values = [],
-    bool $return_cached = true
-  ) : string | int | float
+  static public function get_results( string $sql, bool $return_cached = true ) : array
   {
-    $val = static::select( 'get_var', $sql, $placeholder_values, $return_cached );
+    return static::select( 'get_results', $sql, $return_cached );
+  }
+
+  static public function get_var( string $sql, bool $return_cached = true ) : string | int | float
+  {
+    $val = static::select( 'get_var', $sql, $return_cached );
 
     if ( is_numeric( $val ) )
     {
@@ -41,16 +40,9 @@ class DB
     return $val;
   }
 
-  static private function select(
-    string $wpdb_method_name,
-    string $sql,
-    array $placeholder_values = [],
-    bool $return_cached = true
-  )
+  static private function select( string $wpdb_method_name, string $sql, bool $return_cached = true )
   {
     global $wpdb;
-
-    $sql = $wpdb->prepare( $sql, $placeholder_values );
 
     $start_time_nanosec = hrtime( true );
 
